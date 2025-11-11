@@ -1,301 +1,654 @@
-import { Search, User, ShoppingCart, Star, ArrowRight, Facebook, Twitter, Instagram, Github, Linkedin, Menu, X } from 'lucide-react';
-import { useState } from 'react';
-import "./style.css";
+import React, { useState } from 'react';
+import { Phone, Mail, MapPin, Clock, Wrench, Zap, ShieldCheck, CheckCircle, ChevronDown, Menu, X } from 'lucide-react';
+import './style.css';
+import { useNavigate } from 'react-router-dom';
 
-export default function Home() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+const BangkitCell = () => {
+  const navigate = useNavigate();
+  // Add Poppins font
+  React.useEffect(() => {
+    const link = document.createElement('link');
+    link.href = 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+    document.body.style.fontFamily = "'Poppins', sans-serif";
+    
+    return () => {
+      document.body.style.fontFamily = '';
+    };
+  }, []);
+  const [currentPage, setCurrentPage] = useState('home');
+  const [selectedDevice, setSelectedDevice] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    deviceType: '',
+    subject: '',
+    message: ''
+  });
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  const products = [
-    { id: 1, name: "Red Velvet & Cream Cheese ( 500g )", rating: 4.5, reviews: 62 },
-    { id: 2, name: "Red Velvet & Cream Cheese ( 500g )", rating: 4.5, reviews: 41 },
-    { id: 3, name: "Red Velvet & Cream Cheese ( 500g )", rating: 4.5, reviews: 75 },
-    { id: 4, name: "Red Velvet & Cream Cheese ( 500g )", rating: 4.5, reviews: 63 },
-    { id: 5, name: "Red Velvet & Cream Cheese ( 500g )", rating: 4.5, reviews: 89 }
+  const devices = [
+    { name: 'iPhone', icon: '📱' },
+    { name: 'iPad', icon: '📱' },
+    { name: 'Android', icon: '📱' },
+    { name: 'Tablet', icon: '📱' }
   ];
 
-  return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800&display=swap');
-        
-        body {
-          font-family: 'Poppins', sans-serif;
-        }
-        
-        .nav-link:hover {
-          color: #111827 !important;
-        }
-        
-        .btn-primary {
-          background-color: #1f2937;
-        }
-        
-        .btn-primary:hover {
-          background-color: #374151;
-        }
-        
-        .btn-secondary {
-          border: 2px solid #1f2937;
-          color: #1f2937;
-          background-color: transparent;
-        }
-        
-        .btn-secondary:hover {
-          background-color: #f9fafb;
-        }
-        
-        .hero-img:hover {
-          opacity: 1 !important;
-        }
-        
-        .product-card:hover {
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-          transform: translateY(-4px);
-        }
-        
-        .text-link:hover {
-          color: #374151 !important;
-        }
-        
-        .footer-link:hover {
-          color: #111827 !important;
-        }
-        
-        .social-link:hover {
-          color: #111827 !important;
-        }
-      `}</style>
+  const faqs = [
+    {
+      q: 'Apakah ada biaya pembagian pendapatan?',
+      a: 'Kami menggunakan model penetapan harga yang sederhana dan jelas yang memberikan konten paling banyak untuk perangkat Anda.'
+    },
+    {
+      q: 'Apakah ada biaya minimum atau biaya bulanan tetap?',
+      a: 'Tidak ada biaya tersembunyi. Kami hanya mengenakan biaya untuk layanan perbaikan yang Anda butuhkan.'
+    },
+    {
+      q: 'Apakah Anda mengenakan biaya untuk program PCI DSS atau ketidakpatuhan?',
+      a: 'Kami memastikan semua layanan kami mematuhi standar keamanan tertinggi tanpa biaya tambahan.'
+    },
+    {
+      q: 'Dapatkah saya melihat harga untuk pedagang saya?',
+      a: 'Ya, kami menyediakan transparansi harga penuh untuk semua layanan kami.'
+    },
+    {
+      q: 'Apakah tingkat harga "pilih tingkat" atau "isi tingkat"?',
+      a: 'Kami menggunakan struktur harga yang jelas dan mudah dipahami untuk semua layanan.'
+    },
+    {
+      q: 'Apakah Anda mengenakan biaya berbasis volume ACH?',
+      a: 'Biaya kami kompetitif dan transparan untuk semua jenis layanan.'
+    }
+  ];
 
-      <div className="min-h-screen bg-white w-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
-        {/* Header */}
-        <header className="flex items-center justify-between px-8 py-4 bg-white shadow relative">
-          <div className="text-2xl font-semibold" style={{ color: '#1f2937' }}>
-            Kenangan <span className="font-normal">Bakery</span>
+  const handleSubmit = () => {
+    if (!formData.name || !formData.email || !formData.phone) {
+      alert('Mohon lengkapi semua field yang diperlukan');
+      return;
+    }
+    alert('Pesan Anda telah dikirim! Kami akan menghubungi Anda segera.');
+    setFormData({
+      name: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      deviceType: '',
+      subject: '',
+      message: ''
+    });
+  };
+
+  const renderHome = () => (
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-orange-400 to-orange-300 px-6 py-12 md:py-20 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="max-w-xl">
+            <h1 className="text-3xl md:text-5xl font-bold text-gray-800 mb-2 md:mb-4">
+              Cepat, terjangkau<br />dan perbaikan terpercaya
+            </h1>
+            <p className="text-gray-700 text-lg md:text-xl mb-6 md:mb-8">untuk perangkat mobile Anda</p>
+            <div className="flex justify-center  sm:flex-row gap-4">
+              <button 
+                onClick={() => setCurrentPage('device')}
+                className="bg-blue-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-600 transition"
+              >
+                Pesan Perbaikan
+              </button>
+              <button 
+                onClick={() => setCurrentPage('device')}
+                className="bg-teal-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-teal-600 transition"
+              >
+                Mulai Perbaikan
+              </button>
+            </div>
           </div>
-          
-          <nav className="hidden md:flex gap-8">
-            <a href="#" className="text-sm transition-colors nav-link" style={{ color: '#374151' }}>Home</a>
-            <a href="#" className="text-sm transition-colors nav-link" style={{ color: '#374151' }}>Categories</a>
-            <a href="#" className="text-sm transition-colors nav-link" style={{ color: '#374151' }}>About Us</a>
-            <a href="#" className="text-sm transition-colors nav-link" style={{ color: '#374151' }}>Contact Us</a>
-          </nav>
+        </div>
+        <div className="absolute right-0 top-0 w-64 h-64 md:w-96 md:h-96">
+          <div className="bg-yellow-300 rounded-full w-48 h-48 md:w-80 md:h-80 absolute -right-12 md:-right-20 top-8 md:top-12"></div>
+        </div>
+      </div>
 
-          <div className="flex items-center gap-4">
-            <div className="relative hidden md:block">
+      {/* Features */}
+      <div className="px-6 py-12 md:py-20 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 md:mb-20">
+          <div className="bg-white p-6 rounded-lg shadow-sm text-center">
+            <Wrench className="w-12 h-12 mx-auto mb-3 text-gray-700" />
+            <h3 className="font-bold text-gray-800 mb-2">Profesional Terpercaya</h3>
+            <p className="text-sm text-gray-600">Kami memiliki profesional terbaik di bidang kami yang berdedikasi sebagai ahli perbaikan untuk membantu Anda.</p>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm text-center">
+            <Clock className="w-12 h-12 mx-auto mb-3 text-gray-700" />
+            <h3 className="font-bold text-gray-800 mb-2">Penyelesaian Cepat</h3>
+            <p className="text-sm text-gray-600">Kami dapat mengembalikan perangkat Anda yang sudah diperbaiki dalam waktu 30 menit atau kurang.</p>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm text-center">
+            <ShieldCheck className="w-12 h-12 mx-auto mb-3 text-gray-700" />
+            <h3 className="font-bold text-gray-800 mb-2">Diagnosa Gratis</h3>
+            <p className="text-sm text-gray-600">Jika Anda tidak yakin masalahnya, datanglah untuk diagnosa gratis tanpa diagnosis biaya awal.</p>
+          </div>
+        </div>
+
+        {/* All Kinds of Repairs */}
+        <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-8 md:mb-12">
+          Semua jenis perbaikan. Sungguh nyata.
+        </h2>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-12">
+          {devices.map((device, idx) => (
+            <div key={idx} className="bg-white p-6 rounded-lg shadow-sm text-center">
+              <div className="text-5xl mb-3">{device.icon}</div>
+              <h3 className="font-bold text-gray-800 mb-2">{device.name}</h3>
+              <p className="text-xs text-gray-600">
+                {device.name === 'iPhone' && 'Layar retak? Masalah baterai? Kerusakan air? Kami siap membantu.'}
+                {device.name === 'iPad' && 'Layar retak? Port pengisian rusak? Masalah perangkat lunak? Kami siap membantu.'}
+                {device.name === 'Android' && 'Masalah perangkat keras? Penggantian? Kami siap membantu.'}
+                {device.name === 'Tablet' && 'Solusi cepat dan terpercaya untuk semua jenis tablet.'}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center max-w-3xl mx-auto">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
+            Perbaiki Perangkat Mobile Anda Hari Ini!
+          </h2>
+          <p className="text-sm md:text-base text-gray-600 mb-6">
+            Kami hanya menggunakan suku cadang berkualitas tinggi dan menawarkan berbagai layanan perbaikan, dari perbaikan layar sederhana hingga penggantian motherboard yang rumit. Kami juga menawarkan perbaikan di hari yang sama di sebagian besar area!
+          </p>
+          <button 
+            onClick={() => setCurrentPage('device')}
+            className="bg-teal-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-teal-600 transition"
+          >
+            Mulai Perbaikan
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderDeviceSelection = () => (
+    <div className="min-h-screen bg-gray-50 px-6 py-12">
+      <div className="max-w-md mx-auto">
+        <h2 className="text-2xl font-bold text-gray-800 mb-2 text-center">
+          Perangkat apa yang bermasalah?
+        </h2>
+        <p className="text-gray-600 mb-8 text-center">
+          Para ahli kami akan memperbaiki perangkat Anda dan mengembalikannya dalam waktu singkat.
+        </p>
+
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          {devices.slice(0, 3).map((device, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                setSelectedDevice(device.name);
+                setFormData({...formData, deviceType: device.name});
+                setCurrentPage('contact');
+              }}
+              className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition text-center"
+            >
+              <div className="text-5xl mb-3">{device.icon}</div>
+              <p className="font-semibold text-gray-800">{device.name}</p>
+            </button>
+          ))}
+        </div>
+
+        <div className="flex justify-center">
+          <button
+            onClick={() => {
+              setSelectedDevice('Tablet');
+              setFormData({...formData, deviceType: 'Tablet'});
+              setCurrentPage('contact');
+            }}
+            className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition text-center w-32"
+          >
+            <div className="text-5xl mb-3">📱</div>
+            <p className="font-semibold text-gray-800">Tablet</p>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderContact = () => (
+    <div className="min-h-screen bg-gray-50 px-6 py-12">
+      <div className="max-w-md mx-auto">
+        <h2 className="text-2xl font-bold text-gray-800 mb-2 text-center">
+          Hubungi Kami
+        </h2>
+        <p className="text-gray-600 mb-8 text-center">
+          Ada pertanyaan atau permintaan? Kirim kami pesan!
+        </p>
+
+        {/* Contact Info Card */}
+        <div className="bg-gradient-to-br from-teal-500 to-teal-400 text-white p-6 rounded-lg mb-6">
+          <h3 className="text-xl font-bold mb-4">Informasi Kontak</h3>
+          <p className="text-sm mb-4">Isi formulir dan tim kami akan menghubungi Anda dalam 24 jam.</p>
+          
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <Phone className="w-5 h-5" />
+              <span>+62 821-XXXX-XXXX</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Mail className="w-5 h-5" />
+              <span>info@bangkitcell.com</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <MapPin className="w-5 h-5" />
+              <span>Jl. Contoh No. 123, Jakarta Selatan, DKI Jakarta 12345</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Form */}
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Nama Depan</label>
               <input
                 type="text"
-                placeholder="Search"
-                className="py-2 px-4 pr-10 border rounded-md text-sm w-48"
-                style={{ borderColor: '#d1d5db' }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
               />
-              <button className="absolute right-0 top-0 h-full px-3 text-white rounded-r-md" style={{ backgroundColor: '#1f2937' }}>
-                <Search size={18} />
-              </button>
             </div>
-            <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-              <User size={20} />
-            </button>
-            <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-              <ShoppingCart size={20} />
-            </button>
-            <button className="p-2 rounded-full hover:bg-gray-100 transition-colors md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-
-          {mobileMenuOpen && (
-            <div className="absolute top-full left-0 right-0 bg-white shadow-lg px-8 py-4 z-50 md:hidden">
-              <a href="#" className="block py-3 text-sm" style={{ color: '#374151' }}>Home</a>
-              <a href="#" className="block py-3 text-sm" style={{ color: '#374151' }}>Categories</a>
-              <a href="#" className="block py-3 text-sm" style={{ color: '#374151' }}>About Us</a>
-              <a href="#" className="block py-3 text-sm" style={{ color: '#374151' }}>Contact Us</a>
-            </div>
-          )}
-        </header>
-
-        {/* Hero Section */}
-        <section className="px-8 py-16" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)' }}>
-          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6" style={{ color: '#111827' }}>
-                Membawakan Kebahagian<br />dengan sebagian kue kami
-              </h1>
-              <p className="mb-8 leading-relaxed" style={{ color: '#4b5563' }}>
-                Kita membuat coklat, kue<br />
-                kukis, cheesecake pie atau lainnya yang berbeda<br />
-                Sesuai dengan kemauanmu
-              </p>
-              <div className="flex justify-center md:justify-start gap-4 flex-wrap">
-                <button className="btn-primary text-white px-8 py-3 rounded-md font-medium transition-colors">
-                  Order Sekarang
-                </button>
-                <button className="btn-secondary px-8 py-3 rounded-md font-medium transition-colors">
-                  Lihat Semua Menu
-                </button>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="w-full h-96 rounded-3xl flex items-center justify-center shadow-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #92400e 0%, #451a03 100%)' }}>
-                <img
-                  src="./images/5f0f80d4e5eea.jpg"
-                  alt="Kue Lezat dari Kenangan Bakery"
-                  className="w-full h-full object-cover rounded-3xl transition-opacity hero-img"
-                  style={{ opacity: 0.9 }}
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Best Selling Section */}
-        <section className="px-8 py-20 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            <h2 className="text-4xl font-bold" style={{ color: '#111827' }}>Cobalah Kue Terbaik Kami</h2>
-            <div className="leading-relaxed" style={{ color: '#4b5563' }}>
-              Disinilah kue dan roti terbaik yang kami ciptakan, dengan rating yang sangat baik
+              <label className="block text-sm font-medium text-gray-700 mb-2">Nama Belakang</label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                value={formData.lastName}
+                onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+              />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
-            {products.map((product) => (
-              <div key={product.id} className="product-card bg-white rounded-xl overflow-hidden shadow-md cursor-pointer transition-all">
-                <div className="h-48 flex items-center justify-center transition-transform overflow-hidden" style={{ background: 'linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%)' }}>
-                  <span className="text-6xl">🧁</span>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-medium text-sm mb-2" style={{ color: '#1f2937' }}>{product.name}</h3>
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        size={14}
-                        style={{ fill: i < Math.floor(product.rating) ? '#fbbf24' : 'transparent', color: i < Math.floor(product.rating) ? '#fbbf24' : '#d1d5db' }}
-                      />
-                    ))}
-                    <span className="text-xs ml-1" style={{ color: '#6b7280' }}>{product.reviews} Rating</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <input
+              type="email"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              value={formData.email}
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+            />
           </div>
 
-          <div className="text-center">
-            <button className="btn-secondary px-8 py-3 rounded-md inline-flex items-center gap-2 font-medium transition-colors">
-              <span>View More</span>
-              <ArrowRight size={18} />
-            </button>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Nomor Telepon</label>
+            <input
+              type="tel"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              value={formData.phone}
+              onChange={(e) => setFormData({...formData, phone: e.target.value})}
+            />
           </div>
-        </section>
 
-        {/* Kami Membuatnya untuk Anda Section */}
-        <section className="px-8 py-16 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-4xl font-bold mb-4 leading-tight" style={{ color: '#111827' }}>
-                Kami Membuat untuk Anda<br />Segar Langsung dari Oven
-              </h2>
-              <p className="mb-6 leading-relaxed" style={{ color: '#4b5563' }}>
-                Kami menggunakan bahan-bahan berkualitas yang diperoleh langsung dari para petani. 
-                Para pembuat roti kami adalah orang-orang berpengalaman di bidang kuliner, 
-                sehingga produk yang kami hasilkan terjamin kualitas dan rasanya. 
-                Rasanya begitu lezat, Anda wajib mencobanya!
-              </p>
-              <button className="text-link font-medium inline-flex items-center gap-2 transition-colors bg-transparent border-0 cursor-pointer" style={{ color: '#111827' }}>
-                <span>Baca Selengkapnya</span>
-                <ArrowRight size={18} />
-              </button>
-            </div>
-            <div className="h-96 rounded-3xl flex items-center justify-center shadow-xl" style={{ background: 'linear-gradient(135deg, #dbeafe 0%, #cffafe 100%)' }}>
-              <span className="text-7xl">👨‍🍳</span>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Subjek</label>
+            <div className="grid grid-cols-2 gap-2">
+              {['Konsultasi Umum', 'Pertanyaan Teknis', 'Pertanyaan Harga', 'Pertanyaan Lainnya'].map((subject, idx) => (
+                <label key={idx} className="flex items-center gap-2">
+                  <input 
+                    type="radio" 
+                    name="subject" 
+                    className="text-teal-500"
+                    checked={formData.subject === subject}
+                    onChange={() => setFormData({...formData, subject})}
+                  />
+                  <span className="text-sm">{subject}</span>
+                </label>
+              ))}
             </div>
           </div>
-        </section>
 
-        {/* Datang dan Pilih Bagian */}
-        <section className="px-8 py-16 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="h-96 rounded-3xl flex items-center justify-center shadow-xl order-2 md:order-1" style={{ background: 'linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%)' }}>
-              <span className="text-7xl">☕</span>
-            </div>
-            <div className="order-1 md:order-2">
-              <h2 className="text-4xl font-bold mb-4 leading-tight" style={{ color: '#111827' }}>
-                Datang dan pilih<br />favoritmu
-              </h2>
-              <p className="mb-6 leading-relaxed" style={{ color: '#4b5563' }}>
-                Kami memiliki puluhan jenis kue yang siap disajikan, 
-                baru saja keluar dari oven! Nikmati bersama secangkir kopi atau teh 
-                di toko kami yang nyaman — tempat yang sempurna untuk bersantai, 
-                mengobrol, atau bertemu dengan timmu.
-              </p>
-              <button className="text-link font-medium inline-flex items-center gap-2 transition-colors bg-transparent border-0 cursor-pointer" style={{ color: '#111827' }}>
-                <span>Baca Selengkapnya</span>
-                <ArrowRight size={18} />
-              </button>
-            </div>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Tulis pesan Anda</label>
+            <textarea
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              value={formData.message}
+              onChange={(e) => setFormData({...formData, message: e.target.value})}
+              placeholder="Tulis pesan Anda disini"
+            ></textarea>
           </div>
-        </section>
 
-        {/* Banner Pesanan Besar */}
-        <section className="px-8 py-16 mx-8 mb-16 rounded-3xl" style={{ background: 'linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%)' }}>
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-4" style={{ color: '#111827' }}>
-              Untuk Pemesanan Kue di atas 1 KG
-            </h2>
-            <p className="mb-6 leading-relaxed" style={{ color: '#374151' }}>
-              Silakan kunjungi toko kami terdekat atau hubungi kami di +62 812 0000 0000 (10.00–19.00 WIB)<br />
-              untuk melakukan pemesanan.
-            </p>
-            <button className="btn-primary text-white px-8 py-3 rounded-md font-medium transition-colors">
-              Hubungi Kami Sekarang
-            </button>
-          </div>
-        </section>
+          <button
+            onClick={handleSubmit}
+            className="w-full bg-teal-500 text-white py-3 rounded-lg font-semibold hover:bg-teal-600 transition"
+          >
+            Kirim Pesan
+          </button>
+        </div>
 
-        {/* Testimoni */}
-        <section className="px-8 py-16 max-w-4xl mx-auto text-center">
-          <div className="text-sm font-semibold mb-4 tracking-wider" style={{ color: '#d97706' }}>TESTIMONI</div>
-          <blockquote className="text-3xl font-bold mb-8 leading-tight" style={{ color: '#111827' }}>
-            Kue tanpa telur di sini benar-benar enak.<br />
-            Saya memesan kue KitKat dan rasanya<br />
-            luar biasa. Wajib dicoba!
-          </blockquote>
-          <div className="flex flex-col items-center">
-            <div className="w-16 h-16 rounded-full mb-4" style={{ background: 'linear-gradient(135deg, #60a5fa 0%, #a855f7 100%)' }}></div>
-            <div className="font-semibold mb-1" style={{ color: '#111827' }}>Darren Dunlap</div>
-            <div className="text-sm" style={{ color: '#4b5563' }}>CEO & Founder di Flex.co</div>
+        {/* Map Section */}
+        <div className="mt-8">
+          <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">Lokasi Kami</h3>
+          <div className="bg-gray-200 rounded-lg h-64 flex items-center justify-center">
+            <p className="text-gray-600">Peta Google Maps</p>
           </div>
-        </section>
-
-        {/* Footer */}
-        <footer className="px-8 py-12" style={{ backgroundColor: '#fffbeb' }}>
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-wrap justify-between items-center mb-8">
-              <div className="text-2xl font-semibold mb-4 md:mb-0" style={{ color: '#1f2937' }}>Kenangan Bakery</div>
-              <nav className="flex flex-wrap gap-6">
-                <a href="#" className="footer-link text-sm transition-colors" style={{ color: '#374151' }}>Beranda</a>
-                <a href="#" className="footer-link text-sm transition-colors" style={{ color: '#374151' }}>Kategori</a>
-                <a href="#" className="footer-link text-sm transition-colors" style={{ color: '#374151' }}>Tentang Kami</a>
-                <a href="#" className="footer-link text-sm transition-colors" style={{ color: '#374151' }}>Hubungi Kami</a>
-                <a href="#" className="footer-link text-sm transition-colors" style={{ color: '#374151' }}>Karier</a>
-                <a href="#" className="footer-link text-sm transition-colors" style={{ color: '#374151' }}>Bantuan</a>
-                <a href="#" className="footer-link text-sm transition-colors" style={{ color: '#374151' }}>Privasi</a>
-              </nav>
-            </div>
-            <div className="flex justify-between items-center pt-8 border-t flex-wrap gap-4" style={{ borderColor: '#d1d5db' }}>
-              <div className="text-sm" style={{ color: '#4b5563' }}>
-                © 2025 Kenangan Bakery. Semua hak cipta dilindungi.
-              </div>
-              <div className="flex gap-4">
-                <a href="#" className="social-link transition-colors" style={{ color: '#4b5563' }}><Facebook size={18} /></a>
-                <a href="#" className="social-link transition-colors" style={{ color: '#4b5563' }}><Twitter size={18} /></a>
-                <a href="#" className="social-link transition-colors" style={{ color: '#4b5563' }}><Instagram size={18} /></a>
-                <a href="#" className="social-link transition-colors" style={{ color: '#4b5563' }}><Github size={18} /></a>
-                <a href="#" className="social-link transition-colors" style={{ color: '#4b5563' }}><Linkedin size={18} /></a>
-              </div>
-            </div>
+          <div className="mt-4 bg-white p-4 rounded-lg shadow-sm">
+            <p className="font-semibold text-gray-800">Alamat:</p>
+            <p className="text-gray-600 text-sm">Jl. Contoh No. 123, Jakarta Selatan, DKI Jakarta 12345</p>
           </div>
-        </footer>
+        </div>
       </div>
-    </>
+    </div>
   );
-}
+
+  const renderAbout = () => (
+    <div className="min-h-screen bg-gray-50 px-6 py-12">
+      <div className="max-w-md mx-auto">
+        <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">Nilai Kami</h2>
+        <p className="text-gray-600 mb-8 text-center">
+          Inilah yang kami perjuangkan setiap hari
+        </p>
+
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="bg-gray-100 p-3 rounded-lg">
+                <ShieldCheck className="w-6 h-6 text-gray-700" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-800 mb-2">Keandalan</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Kami berada di sini untuk memberikan produk dan layanan terbaik.
+                </p>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• Kami tidak akan pernah kecewa pelanggan tanpa alasan</li>
+                  <li>• Kami bekerja lebih keras agar Anda fokus pada bisnisnya</li>
+                  <li>• Kami tidak takut melakukan apa pun untuk membantu Anda dan bisnis Anda</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="bg-gray-100 p-3 rounded-lg">
+                <Zap className="w-6 h-6 text-gray-700" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-800 mb-2">Layanan Cepat</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Kami di garis depan.
+                </p>
+                <p className="text-sm text-gray-600">
+                  Jika ada sesuatu yang mengharuskan perubahan cepat, kami akan melakukannya.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="bg-gray-100 p-3 rounded-lg">
+                <Phone className="w-6 h-6 text-gray-700" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-800 mb-2">Akses Online</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Kami bisa dihubungi melalui panggilan telepon.
+                </p>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• Kami ingin membuat orang lebih mencintai teknologi</li>
+                  <li>• Kami tidak butuh jawaban yang rumit</li>
+                  <li>• Kami bekerja bersama-sama</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-purple-100 to-blue-100 p-6 rounded-lg">
+            <div className="flex items-start gap-4">
+              <div className="bg-white p-3 rounded-lg">
+                <CheckCircle className="w-6 h-6 text-gray-700" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-800 mb-2">Mitra Profesional</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Kami memenangkan hati pelanggan dan klien kami.
+                </p>
+                <p className="text-sm text-gray-600 mb-2">
+                  Tidak ada "Penjual" di tim kami - semuanya adalah penasihat.
+                </p>
+                <p className="text-sm text-gray-600">
+                  Tidak seperti kebanyakan perusahaan layanan, kami 100% transparan tentang saran kami - lihat itu untuk diri Anda sendiri.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="bg-gray-100 p-3 rounded-lg">
+                <ShieldCheck className="w-6 h-6 text-gray-700" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-800 mb-2">Terpercaya</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  Kami jujur dan setia.
+                </p>
+                <p className="text-sm text-gray-600 mb-2">
+                  Kami tidak akan membual tentang hal yang tidak pasti.
+                </p>
+                <p className="text-sm text-gray-600">
+                  Kinerjanya yang lebih berat dengan metode, teknologi, dan implementasi - tetapi kami di sini untuk melakukan yang terbaik untuk Anda.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderFAQ = () => (
+    <div className="min-h-screen bg-gray-50 px-6 py-12">
+      <div className="max-w-md mx-auto">
+        <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">
+          Pertanyaan yang Sering Diajukan
+        </h2>
+
+        <div className="space-y-3 mb-8">
+          {faqs.map((faq, idx) => (
+            <div key={idx} className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <button
+                onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                className="w-full px-4 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition"
+              >
+                <span className="font-medium text-gray-800 text-sm flex-1 pr-2">{faq.q}</span>
+                <ChevronDown 
+                  className={`w-5 h-5 text-teal-500 transition-transform flex-shrink-0 ${
+                    openFaq === idx ? 'transform rotate-180' : ''
+                  }`}
+                />
+              </button>
+              {openFaq === idx && (
+                <div className="px-4 pb-4">
+                  <p className="text-sm text-gray-600">{faq.a}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-sm text-center">
+          <h3 className="text-xl font-bold text-gray-800 mb-2">
+            Masih punya pertanyaan atau ingin tahu lebih banyak?
+          </h3>
+          <p className="text-sm text-gray-600 mb-6">
+            Kami menawarkan suku cadang berkualitas tinggi dan menawarkan berbagai layanan perbaikan, dari perbaikan layar sederhana hingga penggantian motherboard yang rumit. Kami juga menawarkan perbaikan di hari yang sama di sebagian besar area!
+          </p>
+          <button
+            onClick={() => setCurrentPage('contact')}
+            className="bg-teal-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-teal-600 transition"
+          >
+            Hubungi Kami
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50" style={{ fontFamily: "'Poppins', sans-serif" }}>
+      {/* Header */}
+      <header className="bg-white shadow-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+              <h1 className="text-xl font-bold">
+                <span className="text-red-500">Bangkit</span>
+                <span className="text-gray-800">Cell</span>
+              </h1>
+            </div>
+            
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-6">
+              <button
+                onClick={() => setCurrentPage('home')}
+                className={`font-medium transition ${currentPage === 'home' ? 'text-teal-500' : 'text-gray-700 hover:text-teal-500'}`}
+              >
+                Beranda
+              </button>
+              <button
+                onClick={() => setCurrentPage('about')}
+                className={`font-medium transition ${currentPage === 'about' ? 'text-teal-500' : 'text-gray-700 hover:text-teal-500'}`}
+              >
+                Tentang
+              </button>
+              <button
+                onClick={() => setCurrentPage('contact')}
+                className={`font-medium transition ${currentPage === 'contact' ? 'text-teal-500' : 'text-gray-700 hover:text-teal-500'}`}
+              >
+                Hubungi Kami
+              </button>
+              <button
+                onClick={() => setCurrentPage('faq')}
+                className={`font-medium transition ${currentPage === 'faq' ? 'text-teal-500' : 'text-gray-700 hover:text-teal-500'}`}
+              >
+                FAQ
+              </button>
+              <button
+                onClick={() =>navigate('/bangkit-cell/auth')}
+                className="bg-teal-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-teal-600 transition"
+              >
+                Login
+              </button>
+            </nav>
+
+            {/* Mobile Menu Button */}
+            <button 
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="p-2 md:hidden"
+            >
+              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {menuOpen && (
+          <div className="bg-white border-t md:hidden">
+            <nav className="max-w-7xl mx-auto px-6 py-4">
+              <button
+                onClick={() => { setCurrentPage('home'); setMenuOpen(false); }}
+                className={`block w-full text-left py-2 ${currentPage === 'home' ? 'text-teal-500 font-semibold' : 'text-gray-700'}`}
+              >
+                Beranda
+              </button>
+              <button
+                onClick={() => { setCurrentPage('about'); setMenuOpen(false); }}
+                className={`block w-full text-left py-2 ${currentPage === 'about' ? 'text-teal-500 font-semibold' : 'text-gray-700'}`}
+              >
+                Tentang
+              </button>
+              <button
+                onClick={() => { setCurrentPage('contact'); setMenuOpen(false); }}
+                className={`block w-full text-left py-2 ${currentPage === 'contact' ? 'text-teal-500 font-semibold' : 'text-gray-700'}`}
+              >
+                Hubungi Kami
+              </button>
+              <button
+                onClick={() => { setCurrentPage('faq'); setMenuOpen(false); }}
+                className={`block w-full text-left py-2 ${currentPage === 'faq' ? 'text-teal-500 font-semibold' : 'text-gray-700'}`}
+              >
+                FAQ
+              </button>
+              <button
+                onClick={() => { setCurrentPage('device'); setMenuOpen(false); }}
+                className="w-full mt-4 bg-teal-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-teal-600 transition"
+              >
+                Pesan Perbaikan
+              </button>
+            </nav>
+          </div>
+        )}
+      </header>
+
+      {/* Page Content */}
+      {currentPage === 'home' && renderHome()}
+      {currentPage === 'device' && renderDeviceSelection()}
+      {currentPage === 'contact' && renderContact()}
+      {currentPage === 'about' && renderAbout()}
+      {currentPage === 'faq' && renderFAQ()}
+
+      {/* Footer */}
+      <footer className="bg-gray-800 text-white py-8">
+        <div className="max-w-md mx-auto px-6">
+          <div className="grid grid-cols-2 gap-6 mb-6">
+            <div>
+              <h4 className="font-bold mb-3">Menu Layanan</h4>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li><button onClick={() => setCurrentPage('home')}>Beranda</button></li>
+                <li><button onClick={() => setCurrentPage('about')}>Tentang</button></li>
+                <li><button onClick={() => setCurrentPage('contact')}>Kontak</button></li>
+                <li><button onClick={() => setCurrentPage('faq')}>FAQ</button></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold mb-3">Lokasi Populer</h4>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li>Jakarta</li>
+                <li>Bandung</li>
+                <li>Surabaya</li>
+                <li>Medan</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <h4 className="font-bold mb-3">Ingin Menjadi Mitra?</h4>
+            <button
+              onClick={() => setCurrentPage('contact')}
+              className="bg-teal-500 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-teal-600 transition"
+            >
+              Hubungi Kami
+            </button>
+          </div>
+
+          <div className="border-t border-gray-700 pt-6 text-center">
+            <p className="text-xs text-gray-400 mb-2">
+              © 2025 Bangkit Cell - Semua hak dilindungi
+            </p>
+            <p className="text-xs text-gray-400">
+              Dipercaya oleh ribuan pelanggan di seluruh Indonesia
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default BangkitCell;
