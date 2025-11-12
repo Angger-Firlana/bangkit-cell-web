@@ -586,10 +586,10 @@ const BangkitCell = () => {
                 FAQ
               </button>
               <button
-                onClick={() => { setCurrentPage('device'); setMenuOpen(false); }}
+                onClick={() => { navigate('/bangkit-cell/auth'); setMenuOpen(false); }}
                 className="w-full mt-4 bg-teal-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-teal-600 transition"
               >
-                Pesan Perbaikan
+                Login
               </button>
             </nav>
           </div>

@@ -1,104 +1,109 @@
-import React, { useState } from 'react';
-import { Plus, Search, Edit, Trash2, Smartphone, Wrench } from 'lucide-react';
-import type { DeviceServiceVariant } from '../../types';
+import React, { useEffect, useState } from "react";
+import { Plus, Search, Edit, Trash2, Smartphone, Wrench, X } from "lucide-react";
+import {
+  getDeviceServiceVariants,
+  postDeviceServiceVariant,
+  putDeviceServiceVariant,
+  deleteDeviceServiceVariant,
+} from "../../services/deviceVariantServices";
+import { getDevices } from "../../services/deviceServices";
+import { getServices } from "../../services/serviceServices";
+import type { DeviceServiceVariant, Device, Service } from "../../types";
 
-const DeviceVariants: React.FC = () => {
-  const [variants, setVariants] = useState<DeviceServiceVariant[]>([
-    {
-      id: 1,
-      device_id: 1,
-      service_id: 1,
-      tipe_part: 'Original',
-      harga_min: 2500000,
-      harga_max: 3500000,
-      catatan: null,
-      created_at: '2025-11-03 06:12:57',
-      updated_at: '2025-11-03 06:12:57'
-    },
-    {
-      id: 2,
-      device_id: 1,
-      service_id: 1,
-      tipe_part: 'OEM',
-      harga_min: 1800000,
-      harga_max: 2500000,
-      catatan: null,
-      created_at: '2025-11-03 06:12:57',
-      updated_at: '2025-11-03 06:12:57'
-    },
-    {
-      id: 3,
-      device_id: 2,
-      service_id: 2,
-      tipe_part: 'Original',
-      harga_min: 800000,
-      harga_max: 1000000,
-      catatan: null,
-      created_at: '2025-11-03 06:12:57',
-      updated_at: '2025-11-03 06:12:57'
-    },
-    {
-      id: 4,
-      device_id: 3,
-      service_id: 1,
-      tipe_part: 'Original',
-      harga_min: 2200000,
-      harga_max: 3000000,
-      catatan: null,
-      created_at: '2025-11-03 06:12:57',
-      updated_at: '2025-11-03 06:12:57'
-    },
-    {
-      id: 5,
-      device_id: 4,
-      service_id: 4,
-      tipe_part: 'OEM',
-      harga_min: 300000,
-      harga_max: 500000,
-      catatan: null,
-      created_at: '2025-11-03 06:12:57',
-      updated_at: '2025-11-03 06:12:57'
-    }
-  ]);
+const DeviceServiceVariants: React.FC = () => {
+  const [variants, setVariants] = useState<DeviceServiceVariant[]>([]);
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState<any>({
+    id: null,
+    device_id: null,
+    service_id: null,
+    tipe_part: "",
+    harga_min: "",
+    harga_max: "",
+    catatan: "",
+  });
+  const [searchDevice, setSearchDevice] = useState("");
+  const [searchService, setSearchService] = useState("");
+  const [isDeviceListOpen, setDeviceListOpen] = useState(false);
+  const [isServiceListOpen, setServiceListOpen] = useState(false);
 
-  const [searchTerm, setSearchTerm] = useState('');
+  // 🔹 Fetch semua data
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const getDeviceName = (deviceId: number): string => {
-    const devices: { [key: number]: string } = {
-      1: 'iPhone 15 Pro',
-      2: 'iPhone 14',
-      3: 'Galaxy S23',
-      4: 'Redmi Note 13',
-      5: 'Reno 11 Pro'
-    };
-    return devices[deviceId] || 'Unknown Device';
+  const loadData = async () => {
+    const [variantRes, deviceRes, serviceRes] = await Promise.all([
+      getDeviceServiceVariants(),
+      getDevices(),
+      getServices(),
+    ]);
+    setVariants(variantRes);
+    setDevices(deviceRes);
+    setServices(serviceRes);
   };
 
-  const getServiceName = (serviceId: number): string => {
-    const services: { [key: number]: string } = {
-      1: 'Ganti LCD',
-      2: 'Ganti Baterai',
-      3: 'Ganti Kamera Belakang',
-      4: 'Ganti Speaker',
-      5: 'Ganti Port Charger'
-    };
-    return services[serviceId] || 'Unknown Service';
-  };
+  const getDeviceName = (id: number) => devices.find((d) => d.id === id)?.model ?? "Unknown Device";
+  const getServiceName = (id: number) => services.find((s) => s.id === id)?.nama ?? "Unknown Service";
 
-  const filteredVariants = variants.filter(variant =>
-    getDeviceName(variant.device_id).toLowerCase().includes(searchTerm.toLowerCase()) ||
-    getServiceName(variant.service_id).toLowerCase().includes(searchTerm.toLowerCase()) ||
-    variant.tipe_part?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredVariants = variants.filter(
+    (v) =>
+      getDeviceName(v.device_id).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getServiceName(v.service_id).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (v.tipe_part ?? "").toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleSubmit = async () => {
+    const payload = {
+      device_id: formData.device_id,
+      service_id: formData.service_id,
+      tipe_part: formData.tipe_part,
+      harga_min: Number(formData.harga_min),
+      harga_max: Number(formData.harga_max),
+      catatan: formData.catatan,
+    };
+    if (formData.id) {
+      await putDeviceServiceVariant({ id: formData.id, ...payload });
+    } else {
+      await postDeviceServiceVariant(payload);
+    }
+    setShowModal(false);
+    loadData();
+  };
+
+  const handleDelete = async (id: number) => {
+    if (confirm("Yakin ingin menghapus variant ini?")) {
+      await deleteDeviceServiceVariant({ id });
+      loadData();
+    }
+  };
 
   return (
     <div className="p-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Device Service Variants</h1>
-          <p className="text-gray-600">Kelola varian harga untuk setiap service per device</p>
+          <p className="text-gray-600">Kelola varian service & harga setiap device</p>
         </div>
-        <button className="bg-teal-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-teal-600 transition">
+        <button
+          onClick={() => {
+            setFormData({
+              id: null,
+              device_id: null,
+              service_id: null,
+              tipe_part: "",
+              harga_min: "",
+              harga_max: "",
+              catatan: "",
+            });
+            setShowModal(true);
+          }}
+          className="bg-teal-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-teal-600 transition"
+        >
           <Plus className="w-4 h-4" />
           Tambah Variant
         </button>
@@ -118,7 +123,7 @@ const DeviceVariants: React.FC = () => {
         </div>
       </div>
 
-      {/* Variants Table */}
+      {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -134,60 +139,56 @@ const DeviceVariants: React.FC = () => {
                   Harga Range
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Dibuat
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Aksi
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredVariants.map((variant) => (
-                <tr key={variant.id} className="hover:bg-gray-50">
+              {filteredVariants.map((v) => (
+                <tr key={v.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex-shrink-0">
-                        <Smartphone className="w-5 h-5 text-gray-400" />
-                      </div>
+                      <Smartphone className="w-5 h-5 text-gray-400" />
                       <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {getDeviceName(variant.device_id)}
-                        </div>
+                        <div className="font-medium text-gray-900">{getDeviceName(v.device_id)}</div>
                         <div className="text-sm text-gray-500 flex items-center gap-1">
                           <Wrench className="w-3 h-3" />
-                          {getServiceName(variant.service_id)}
+                          {getServiceName(v.service_id)}
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      variant.tipe_part === 'Original' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {variant.tipe_part}
+                  <td className="px-6 py-4">
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        v.tipe_part === "Original"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-blue-100 text-blue-800"
+                      }`}
+                    >
+                      {v.tipe_part}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4">
                     <div className="text-sm font-medium text-gray-900">
-                      Rp {variant.harga_min.toLocaleString()} - Rp {variant.harga_max.toLocaleString()}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      Range harga
+                      Rp {v.harga_min.toLocaleString()} - Rp {v.harga_max.toLocaleString()}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">
-                      {variant.created_at ? new Date(variant.created_at).toLocaleDateString('id-ID') : '-'}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center gap-2">
-                      <button className="text-blue-600 hover:text-blue-900 p-1">
+                    <div className="flex gap-2">
+                      <button
+                        className="text-blue-600 hover:text-blue-900"
+                        onClick={() => {
+                          setFormData(v);
+                          setShowModal(true);
+                        }}
+                      >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="text-red-600 hover:text-red-900 p-1">
+                      <button
+                        className="text-red-600 hover:text-red-900"
+                        onClick={() => handleDelete(v.id)}
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -199,14 +200,160 @@ const DeviceVariants: React.FC = () => {
         </div>
       </div>
 
-      {filteredVariants.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-gray-400 mb-2">Tidak ada variant ditemukan</div>
-          <div className="text-sm text-gray-500">Coba ubah kata kunci pencarian</div>
+      {/* Modal Form */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-lg relative">
+            <button onClick={() => setShowModal(false)} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-lg font-semibold mb-4">
+              {formData.id ? "Edit Variant" : "Tambah Variant"}
+            </h2>
+
+            {/* Search device */}
+            <div className="mb-3">
+              <label className="text-sm font-medium text-gray-700">Device</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Cari device..."
+                  value={
+                    formData.device_id
+                      ? getDeviceName(formData.device_id)
+                      : searchDevice
+                  }
+                  onChange={(e) => {
+                    setSearchDevice(e.target.value);
+                    setDeviceListOpen(true);
+                  }}
+                  className="w-full mt-1 border px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500"
+                />
+                {isDeviceListOpen && (
+                  <ul className="absolute z-10 bg-white border rounded-lg w-full max-h-40 overflow-y-auto mt-1">
+                    {devices
+                      .filter((d) =>
+                        d.model.toLowerCase().includes(searchDevice.toLowerCase())
+                      )
+                      .map((d) => (
+                        <li
+                          key={d.id}
+                          onClick={() => {
+                            setFormData({ ...formData, device_id: d.id });
+                            setSearchDevice("");
+                            setDeviceListOpen(false);
+                          }}
+                          className="px-3 py-2 hover:bg-teal-100 cursor-pointer"
+                        >
+                          {d.model}
+                        </li>
+                      ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+
+            {/* Search service */}
+            <div className="mb-3">
+              <label className="text-sm font-medium text-gray-700">Service</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Cari service..."
+                  value={
+                    formData.service_id
+                      ? getServiceName(formData.service_id)
+                      : searchService
+                  }
+                  onChange={(e) => {
+                    setSearchService(e.target.value);
+                    setServiceListOpen(true);
+                  }}
+                  className="w-full mt-1 border px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500"
+                />
+                {isServiceListOpen && (
+                  <ul className="absolute z-10 bg-white border rounded-lg w-full max-h-40 overflow-y-auto mt-1">
+                    {services
+                      .filter((s) =>
+                        s.nama.toLowerCase().includes(searchService.toLowerCase())
+                      )
+                      .map((s) => (
+                        <li
+                          key={s.id}
+                          onClick={() => {
+                            setFormData({ ...formData, service_id: s.id });
+                            setSearchService("");
+                            setServiceListOpen(false);
+                          }}
+                          className="px-3 py-2 hover:bg-teal-100 cursor-pointer"
+                        >
+                          {s.nama}
+                        </li>
+                      ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+
+            {/* Fields lainnya */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Tipe Part</label>
+                <input
+                  type="text"
+                  value={formData.tipe_part}
+                  onChange={(e) => setFormData({ ...formData, tipe_part: e.target.value })}
+                  className="w-full mt-1 border px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Harga Min</label>
+                <input
+                  type="number"
+                  value={formData.harga_min}
+                  onChange={(e) => setFormData({ ...formData, harga_min: e.target.value })}
+                  className="w-full mt-1 border px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Harga Max</label>
+                <input
+                  type="number"
+                  value={formData.harga_max}
+                  onChange={(e) => setFormData({ ...formData, harga_max: e.target.value })}
+                  className="w-full mt-1 border px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Catatan</label>
+                <input
+                  type="text"
+                  value={formData.catatan ?? ""}
+                  onChange={(e) => setFormData({ ...formData, catatan: e.target.value })}
+                  className="w-full mt-1 border px-3 py-2 rounded-lg focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
+            </div>
+
+            <div className="mt-5 flex justify-end gap-3">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleSubmit}
+                className="px-4 py-2 rounded-lg bg-teal-500 text-white hover:bg-teal-600"
+              >
+                Simpan
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
 };
 
-export default DeviceVariants;
+export default DeviceServiceVariants;

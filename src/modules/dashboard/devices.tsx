@@ -1,79 +1,116 @@
-import React, { useState } from 'react';
-import { Plus, Search, Edit, Trash2 } from 'lucide-react';
-import type { Device, Brand } from '../../types';
+import React, { useEffect, useState } from 'react';
+import { Plus, Search, Edit, Trash2, X } from 'lucide-react';
+import type { Device, DevicePostRequest, DevicePustRequest } from '../../types/devices';
+import type { Brand } from '../../types/brands';
+import * as deviceService from '../../services/deviceServices';
+import * as brandService from '../../services/brandServices';
 
 const Devices: React.FC = () => {
-  const [devices, setDevices] = useState<Device[]>([
-    {
-      id: 1,
-      brand_id: 1,
-      model: 'iPhone 15 Pro',
-      tipe: 'Pro',
-      created_at: '2025-11-03 06:12:57',
-      updated_at: '2025-11-03 06:12:57'
-    },
-    {
-      id: 2,
-      brand_id: 1,
-      model: 'iPhone 14',
-      tipe: 'Standard',
-      created_at: '2025-11-03 06:12:57',
-      updated_at: '2025-11-03 06:12:57'
-    },
-    {
-      id: 3,
-      brand_id: 2,
-      model: 'Galaxy S23',
-      tipe: 'Ultra',
-      created_at: '2025-11-03 06:12:57',
-      updated_at: '2025-11-03 06:12:57'
-    },
-    {
-      id: 4,
-      brand_id: 3,
-      model: 'Redmi Note 13',
-      tipe: 'Standard',
-      created_at: '2025-11-03 06:12:57',
-      updated_at: '2025-11-03 06:12:57'
-    },
-    {
-      id: 5,
-      brand_id: 4,
-      model: 'Reno 11 Pro',
-      tipe: 'Pro',
-      created_at: '2025-11-03 06:12:57',
-      updated_at: '2025-11-03 06:12:57'
-    }
-  ]);
-
-  const [brands] = useState<Brand[]>([
-    { id: 1, nama: 'Apple', negara_asal: 'USA', created_at: null, updated_at: null },
-    { id: 2, nama: 'Samsung', negara_asal: 'Korea Selatan', created_at: null, updated_at: null },
-    { id: 3, nama: 'Xiaomi', negara_asal: 'China', created_at: null, updated_at: null },
-    { id: 4, nama: 'Oppo', negara_asal: 'China', created_at: null, updated_at: null },
-    { id: 5, nama: 'Vivo', negara_asal: 'China', created_at: null, updated_at: null }
-  ]);
-
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const getBrandName = (brandId: number): string => {
-    const brand = brands.find(b => b.id === brandId);
-    return brand ? brand.nama : 'Unknown';
+  // Modal States
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [showBrandModal, setShowBrandModal] = useState(false);
+  const [searchBrand, setSearchBrand] = useState('');
+
+  // Form State
+  const [formData, setFormData] = useState<DevicePostRequest | DevicePustRequest>({
+    brand_id: 0,
+    model: '',
+    tipe: '',
+  });
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  // Fetch data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [deviceRes, brandRes] = await Promise.all([
+          deviceService.getDevices(),
+          brandService.getBrands(),
+        ]);
+        setDevices(deviceRes);
+        setBrands(brandRes);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const getBrandName = (id: number) => {
+    return brands.find(b => b.id === id)?.nama || 'Unknown';
   };
 
-  const filteredDevices = devices.filter(device =>
-    device.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    getBrandName(device.brand_id).toLowerCase().includes(searchTerm.toLowerCase())
+  const handleSave = async () => {
+    try {
+      if (editingId) {
+        await deviceService.putDevice({ id: editingId, ...formData });
+      } else {
+        await deviceService.postDevice(formData as DevicePostRequest);
+      }
+
+      const refreshed = await deviceService.getDevices();
+      setDevices(refreshed);
+      setShowFormModal(false);
+      setFormData({ brand_id: 0, model: '', tipe: '' });
+      setEditingId(null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleEdit = (device: Device) => {
+    setFormData({
+      brand_id: device.brand_id,
+      model: device.model,
+      tipe: device.tipe,
+      id: device.id,
+    });
+    setEditingId(device.id);
+    setShowFormModal(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Yakin ingin menghapus device ini?')) return;
+    await deviceService.deleteDevice({ id });
+    const refreshed = await deviceService.getDevices();
+    setDevices(refreshed);
+  };
+
+  const filteredDevices = devices.filter(
+    d =>
+      d.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getBrandName(d.brand_id).toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const filteredBrands = brands.filter(b =>
+    b.nama.toLowerCase().includes(searchBrand.toLowerCase())
+  );
+
+  if (loading) return <div className="p-6 text-gray-500">Loading data...</div>;
 
   return (
     <div className="p-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Devices Management</h1>
           <p className="text-gray-600">Kelola model perangkat yang tersedia</p>
         </div>
-        <button className="bg-teal-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-teal-600 transition">
+        <button
+          onClick={() => {
+            setShowFormModal(true);
+            setEditingId(null);
+            setFormData({ brand_id: 0, model: '', tipe: '' });
+          }}
+          className="bg-teal-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-teal-600 transition"
+        >
           <Plus className="w-4 h-4" />
           Tambah Device
         </button>
@@ -93,58 +130,30 @@ const Devices: React.FC = () => {
         </div>
       </div>
 
-      {/* Devices Table */}
+      {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Model
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Brand
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tipe
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Dibuat
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Aksi
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Model</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Brand</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredDevices.map((device) => (
+              {filteredDevices.map(device => (
                 <tr key={device.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{device.model}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-600">{getBrandName(device.brand_id)}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      device.tipe === 'Pro' || device.tipe === 'Ultra' 
-                        ? 'bg-purple-100 text-purple-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {device.tipe}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">
-                      {device.created_at ? new Date(device.created_at).toLocaleDateString('id-ID') : '-'}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center gap-2">
-                      <button className="text-blue-600 hover:text-blue-900 p-1">
+                  <td className="px-6 py-4">{device.model}</td>
+                  <td className="px-6 py-4">{getBrandName(device.brand_id)}</td>
+                  <td className="px-6 py-4">{device.tipe}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex gap-2">
+                      <button onClick={() => handleEdit(device)} className="text-blue-600 hover:text-blue-900">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="text-red-600 hover:text-red-900 p-1">
+                      <button onClick={() => handleDelete(device.id)} className="text-red-600 hover:text-red-900">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -156,10 +165,102 @@ const Devices: React.FC = () => {
         </div>
       </div>
 
-      {filteredDevices.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-gray-400 mb-2">Tidak ada device ditemukan</div>
-          <div className="text-sm text-gray-500">Coba ubah kata kunci pencarian</div>
+      {/* FORM MODAL */}
+      {showFormModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-[400px] relative">
+            <button onClick={() => setShowFormModal(false)} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-lg font-semibold mb-4">
+              {editingId ? 'Edit Device' : 'Tambah Device'}
+            </h2>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Brand</label>
+                <div className="flex items-center gap-2 mt-1">
+                  <input
+                    type="text"
+                    value={getBrandName(formData.brand_id)}
+                    readOnly
+                    className="flex-1 border rounded-md px-3 py-2 bg-gray-100"
+                  />
+                  <button
+                    onClick={() => setShowBrandModal(true)}
+                    className="bg-teal-500 text-white px-3 py-2 rounded-md text-sm hover:bg-teal-600"
+                  >
+                    Pilih
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700">Model</label>
+                <input
+                  type="text"
+                  value={formData.model}
+                  onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                  className="w-full border rounded-md px-3 py-2"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700">Tipe</label>
+                <input
+                  type="text"
+                  value={formData.tipe}
+                  onChange={(e) => setFormData({ ...formData, tipe: e.target.value })}
+                  className="w-full border rounded-md px-3 py-2"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-5">
+              <button onClick={() => setShowFormModal(false)} className="px-4 py-2 border rounded-md">
+                Batal
+              </button>
+              <button onClick={handleSave} className="px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600">
+                Simpan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* BRAND SELECT MODAL */}
+      {showBrandModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-[400px] relative">
+            <button onClick={() => setShowBrandModal(false)} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-lg font-semibold mb-4">Pilih Brand</h2>
+
+            <input
+              type="text"
+              placeholder="Cari brand..."
+              className="w-full border rounded-md px-3 py-2 mb-3"
+              value={searchBrand}
+              onChange={(e) => setSearchBrand(e.target.value)}
+            />
+
+            <div className="max-h-[250px] overflow-y-auto space-y-1">
+              {filteredBrands.map((b) => (
+                <button
+                  key={b.id}
+                  onClick={() => {
+                    setFormData({ ...formData, brand_id: b.id });
+                    setShowBrandModal(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-md hover:bg-teal-50"
+                >
+                  <div className="font-medium">{b.nama}</div>
+                  <div className="text-xs text-gray-500">{b.negara_asal}</div>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>

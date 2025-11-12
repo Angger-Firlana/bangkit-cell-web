@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Lock, Mail, Phone, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, Phone, ArrowRight, PhilippinePeso } from 'lucide-react';
 import './style.css';
+import { login } from '../../services/authService';
+import { useNavigate } from 'react-router-dom';
 
 const BangkitCellLogin = () => {
+  const navigate = useNavigate();
   // Add Poppins font
   React.useEffect(() => {
     const link = document.createElement('link');
@@ -28,13 +31,25 @@ const BangkitCellLogin = () => {
     rememberMe: false
   });
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (isLogin) {
       if (!formData.email || !formData.password) {
         alert('Mohon lengkapi email dan password');
         return;
       }
-      alert('Login berhasil! Selamat datang di Bangkit Cell');
+
+      try{
+        const response = await login(formData.email, formData.password);
+        if(response.status){
+          alert('Login berhasil! Selamat datang di Bangkit Cell');
+          setIsLogin(true);
+          navigate('/bangkit-cell/dashboard');
+        };
+
+      }catch(error:any){
+        // Tampilkan error jika login gagal
+      alert(error.response?.data?.message || 'Login gagal, coba lagi');
+      }
     } else {
       if (!formData.name || !formData.email || !formData.phone || !formData.password || !formData.confirmPassword) {
         alert('Mohon lengkapi semua field');

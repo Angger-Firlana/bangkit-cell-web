@@ -21,11 +21,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
   const menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/bangkit-cell/dashboard' },
-    { id: 'services', label: 'Services', icon: Wrench, path: '/bangkit-cell/services' },
-    { id: 'devices', label: 'Devices', icon: Smartphone, path: '/bangkit-cell/devices' },
-    { id: 'device-variants', label: 'Device Variants', icon: Settings, path: '/bangkit-cell/device-variants' },
-    { id: 'sales-report', label: 'Sales Report', icon: BarChart3, path: '/bangkit-cell/sales-report' },
-    { id: 'users', label: 'Users', icon: Users, path: '/bangkit-cell/users' },
+    { id: 'services', label: 'Services', icon: Wrench, path: '/bangkit-cell/dashboard/services' },
+    { id: 'devices', label: 'Devices', icon: Smartphone, path: '/bangkit-cell/dashboard/devices' },
+    { id: 'device-variants', label: 'Device Variants', icon: Settings, path: '/bangkit-cell/dashboard/device-variants' },
+    { id: 'sales-report', label: 'Sales Report', icon: BarChart3, path: '/bangkit-cell/dashboard/sales-report' },
+    { id: 'users', label: 'Users', icon: Users, path: '/bangkit-cell/dashboard/users' },
   ];
 
   const isActive = (path: string): boolean => {
