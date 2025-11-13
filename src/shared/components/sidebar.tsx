@@ -7,6 +7,7 @@ import {
   Wrench, 
   BarChart3, 
   Users,
+  History,
   X 
 } from 'lucide-react';
 import type { MenuItem } from '../../types';
@@ -26,6 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     { id: 'device-variants', label: 'Device Variants', icon: Settings, path: '/bangkit-cell/dashboard/device-variants' },
     { id: 'sales-report', label: 'Sales Report', icon: BarChart3, path: '/bangkit-cell/dashboard/sales-report' },
     { id: 'users', label: 'Users', icon: Users, path: '/bangkit-cell/dashboard/users' },
+    { id: 'transaction', label: 'Transaction', icon: History, path: '/bangkit-cell/dashboard/transaction' },
   ];
 
   const isActive = (path: string): boolean => {

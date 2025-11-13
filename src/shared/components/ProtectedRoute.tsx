@@ -11,7 +11,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   console.log(token); 
   // ⛔ kalau token kosong langsung redirect, tanpa loading
   if (!token) {
-    return <Navigate to="/bangkit-cell/auth" replace />;
+    return <Navigate to="/bangkit-cell/forbidden-access" replace />;
   }
   // ✅ kalau ada token, langsung render halaman
   return children;

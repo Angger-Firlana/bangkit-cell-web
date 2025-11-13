@@ -10,7 +10,8 @@ import DeviceVariants from "../modules/dashboard/DeviceVariants";
 import SalesReport from "../modules/dashboard/SalesReport";
 import Users from "../modules/dashboard/Users";
 import ProtectedRoute from "../shared/components/ProtectedRoute";
-
+import ForbiddenAccess from "../modules/protected-page/forbidden-access";
+import Transactions from "../modules/dashboard/transaction";
 function App() {
   return (
     <Routes>
@@ -28,6 +29,24 @@ function App() {
               <Dashboard />
             </Layout>
           </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/bangkit-cell/dashboard/transaction"
+        element={
+          <ProtectedRoute>
+              <Transactions />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/bangkit-cell/forbidden-access"
+        element={
+            <Layout>
+              <ForbiddenAccess />
+            </Layout>
         }
       />
 

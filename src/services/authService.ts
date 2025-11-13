@@ -1,6 +1,7 @@
 import api from "./axios.ts";
 import type { LoginResponse } from "../types/login.tsx";
 import { saveEncrypted } from "../shared/utils/EncryptedLocal.ts";
+import { getCache, setCache, delCacheByPrefix } from "../shared/utils/cache";
 
 export const login = async (
   email: string,
@@ -9,10 +10,17 @@ export const login = async (
   const response = await api.post<LoginResponse>("api/auth/login", { email, password });
   saveEncrypted("token", response.data.token.toString());
   saveEncrypted("user", JSON.stringify(response.data.data));
+  delCacheByPrefix("auth:");
   return response.data;
 };
 
+const AUTH_PROFILE_KEY = "auth:profile:v1";
+const AUTH_PROFILE_TTL_MS = 2 * 60 * 1000; // 2 minutes
+
 export const getProfile = async () => {
+  const cached = getCache<any>(AUTH_PROFILE_KEY);
+  if (cached) return cached;
   const response = await api.get("/profile");
+  setCache(AUTH_PROFILE_KEY, response.data, AUTH_PROFILE_TTL_MS);
   return response.data;
 };

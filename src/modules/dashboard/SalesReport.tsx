@@ -1,83 +1,85 @@
-import React, { useState } from 'react';
-import { Download, Filter, Calendar } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import type { Transaction } from '../../types';
+import React, { useEffect, useState } from "react";
+import { Download, Filter, Calendar } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+} from "recharts";
+import { fetchTransactionReport } from "../../services/transactionReportServices";
+import type { TransactionReportResponse } from "../../types/stats";
+
+const CACHE_KEY = "sales_report_cache";
+const CACHE_DURATION = 60 * 60 * 1000; // 1 jam
 
 const SalesReport: React.FC = () => {
-  const [transactions] = useState<Transaction[]>([
-    {
-      id: 1,
-      id_operator: 1,
-      status: 'pending',
-      metode_pembayaran: null,
-      jumlah_bayar: null,
-      kembalian: null,
-      qris_reference: null,
-      total: 3200000,
-      created_at: '2025-11-04 06:38:27',
-      updated_at: '2025-11-04 06:38:27',
-      customer_name: '',
-      customer_phone: ''
-    },
-    {
-      id: 8,
-      id_operator: 1,
-      status: 'pending',
-      metode_pembayaran: 'other',
-      jumlah_bayar: 1000000,
-      kembalian: 10000,
-      qris_reference: null,
-      total: 3200000,
-      created_at: '2025-11-08 05:25:18',
-      updated_at: '2025-11-08 05:25:18',
-      customer_name: 'Ahmad Fauzi',
-      customer_phone: '081234567890'
-    },
-    {
-      id: 9,
-      id_operator: 3,
-      status: 'pending',
-      metode_pembayaran: 'cash',
-      jumlah_bayar: 100000,
-      kembalian: 100000,
-      total: 0,
-      qris_reference: null,
-      created_at: '2025-11-08 08:36:36',
-      updated_at: '2025-11-08 08:36:36',
-      customer_name: 'Angger Firlana',
-      customer_phone: '0895630354567'
+  const [data, setData] = useState<TransactionReportResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // 🔁 Ambil dari cache atau API
+  useEffect(() => {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Date.now() - parsed.timestamp < CACHE_DURATION) {
+        setData(parsed.data);
+        setLoading(false);
+        return;
+      }
     }
-  ]);
 
-  const salesData = [
-    { month: 'Jan', revenue: 45000000, transactions: 45 },
-    { month: 'Feb', revenue: 52000000, transactions: 52 },
-    { month: 'Mar', revenue: 48000000, transactions: 48 },
-    { month: 'Apr', revenue: 61000000, transactions: 61 },
-    { month: 'May', revenue: 55000000, transactions: 55 },
-    { month: 'Jun', revenue: 72000000, transactions: 72 },
-    { month: 'Jul', revenue: 68000000, transactions: 68 },
-    { month: 'Aug', revenue: 75000000, transactions: 75 },
-    { month: 'Sep', revenue: 82000000, transactions: 82 },
-    { month: 'Oct', revenue: 78000000, transactions: 78 },
-    { month: 'Nov', revenue: 13200000, transactions: 9 },
-    { month: 'Dec', revenue: 0, transactions: 0 }
-  ];
+    fetchData();
+  }, []);
 
-  const servicePerformance = [
-    { service: 'Ganti LCD', revenue: 95000000, transactions: 95 },
-    { service: 'Ganti Baterai', revenue: 45000000, transactions: 90 },
-    { service: 'Ganti Kamera', revenue: 35000000, transactions: 35 },
-    { service: 'Ganti Speaker', revenue: 20000000, transactions: 40 },
-    { service: 'Ganti Port', revenue: 15000000, transactions: 30 }
-  ];
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetchTransactionReport();
+      setData(response);
 
-  const totalRevenue = salesData.reduce((sum, item) => sum + item.revenue, 0);
-  const totalTransactions = salesData.reduce((sum, item) => sum + item.transactions, 0);
-  const averageTransaction = totalRevenue / totalTransactions;
+      localStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify({ data: response, timestamp: Date.now() })
+      );
+    } catch (err: any) {
+      setError("Gagal memuat laporan penjualan.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-[80vh]">
+        <p className="text-gray-500">Memuat data laporan...</p>
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="flex items-center justify-center h-[80vh]">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+
+  if (!data) return null;
+
+  const { salesData, servicePerformance, totalRevenue, totalTransactions } =
+    data;
+
+  const averageTransaction =
+    totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
 
   return (
     <div className="p-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Sales Report</h1>
@@ -101,120 +103,98 @@ const SalesReport: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">Rp {totalRevenue.toLocaleString()}</p>
-            </div>
-            <div className="bg-green-500 p-3 rounded-lg">
-              <span className="text-white text-lg font-bold">₿</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Transactions</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">{totalTransactions}</p>
-            </div>
-            <div className="bg-blue-500 p-3 rounded-lg">
-              <span className="text-white text-lg font-bold">↗</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Avg. Transaction</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">Rp {averageTransaction.toLocaleString()}</p>
-            </div>
-            <div className="bg-purple-500 p-3 rounded-lg">
-              <span className="text-white text-lg font-bold">Ø</span>
-            </div>
-          </div>
-        </div>
+        <SummaryCard
+          title="Total Revenue"
+          value={`Rp ${totalRevenue.toLocaleString()}`}
+          color="bg-green-500"
+          symbol="₿"
+        />
+        <SummaryCard
+          title="Total Transactions"
+          value={totalTransactions}
+          color="bg-blue-500"
+          symbol="↗"
+        />
+        <SummaryCard
+          title="Avg. Transaction"
+          value={`Rp ${averageTransaction.toLocaleString()}`}
+          color="bg-purple-500"
+          symbol="Ø"
+        />
       </div>
 
+      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Revenue Chart */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Monthly Revenue</h3>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={salesData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis 
-                  tickFormatter={(value) => `Rp ${(value / 1000000).toFixed(0)}Jt`}
-                />
-                <Tooltip 
-                  formatter={(value: number) => [`Rp ${value.toLocaleString()}`, 'Revenue']}
-                />
-                <Bar dataKey="revenue" fill="#0d9488" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        <ChartCard title="Monthly Revenue">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={salesData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis
+                tickFormatter={(value) => `Rp ${(value / 1000000).toFixed(0)}Jt`}
+              />
+              <Tooltip
+                formatter={(value: number) => [`Rp ${value.toLocaleString()}`, "Revenue"]}
+              />
+              <Bar dataKey="revenue" fill="#0d9488" />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
 
-        {/* Transactions Trend */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Transactions Trend</h3>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={salesData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="transactions" stroke="#0d9488" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        <ChartCard title="Transactions Trend">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={salesData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Line
+                type="monotone"
+                dataKey="transactions"
+                stroke="#0d9488"
+                strokeWidth={2}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </ChartCard>
       </div>
 
-      {/* Service Performance */}
+      {/* Service Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Service Performance</h3>
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          Service Performance
+        </h3>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Service
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Revenue
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Transactions
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Avg. Revenue
-                </th>
+                {["Service", "Revenue", "Transactions", "Avg. Revenue"].map(
+                  (h) => (
+                    <th
+                      key={h}
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      {h}
+                    </th>
+                  )
+                )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {servicePerformance.map((service, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{service.service}</div>
+              {servicePerformance.map((s, i) => (
+                <tr key={i} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                    {s.service}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      Rp {service.revenue.toLocaleString()}
-                    </div>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                    Rp {s.revenue.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-600">{service.transactions}</div>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {s.transactions}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-600">
-                      Rp {Math.round(service.revenue / service.transactions).toLocaleString()}
-                    </div>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    Rp{" "}
+                    {Math.round(s.revenue / s.transactions).toLocaleString()}
                   </td>
                 </tr>
               ))}
@@ -225,5 +205,39 @@ const SalesReport: React.FC = () => {
     </div>
   );
 };
+
+const SummaryCard = ({
+  title,
+  value,
+  color,
+  symbol,
+}: {
+  title: string;
+  value: string | number;
+  color: string;
+  symbol: string;
+}) => (
+  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-600">{title}</p>
+        <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
+      </div>
+      <div className={`${color} p-3 rounded-lg`}>
+        <span className="text-white text-lg font-bold">{symbol}</span>
+      </div>
+    </div>
+  </div>
+);
+
+const ChartCard: React.FC<{ title: string; children: React.ReactNode }> = ({
+  title,
+  children,
+}) => (
+  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <h3 className="text-lg font-semibold text-gray-800 mb-4">{title}</h3>
+    <div className="h-80">{children}</div>
+  </div>
+);
 
 export default SalesReport;

@@ -2,7 +2,7 @@ import axios from "axios";
 import { getDecrypted } from "../shared/utils/EncryptedLocal";
 
 export const api = axios.create({
-  baseURL: "http://192.168.1.24:8000/", // pastikan sesuai backend
+  baseURL: "http://127.0.0.1:8000/", // pastikan sesuai backend
   headers: {
     "Content-Type": "application/json",
   },
