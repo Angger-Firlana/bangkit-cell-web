@@ -168,10 +168,10 @@ const Dashboard: React.FC = () => {
                       }
                       dataKey="value"
                     >
-                      {data.device_distribution.map((entry, index) => (
+                      {data.device_distribution.map((index) => (
                         <Cell
                           key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
+                          fill={COLORS[index.value% COLORS.length]}
                         />
                       ))}
                     </Pie>

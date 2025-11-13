@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Lock, Mail, Phone, ArrowRight, PhilippinePeso } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, Phone, ArrowRight } from 'lucide-react';
 import './style.css';
 import { login } from '../../services/authService';
 import { useNavigate } from 'react-router-dom';

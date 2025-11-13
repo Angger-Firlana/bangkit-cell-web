@@ -1,6 +1,5 @@
 import { Navigate } from "react-router-dom";
 import { getDecrypted } from "../utils/EncryptedLocal"; // sesuaikan path-nya ya
-import type { User } from "../../types";
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }

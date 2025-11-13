@@ -18,7 +18,6 @@ const BangkitCell = () => {
     };
   }, []);
   const [currentPage, setCurrentPage] = useState('home');
-  const [selectedDevice, setSelectedDevice] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     lastName: '',
@@ -188,7 +187,6 @@ const BangkitCell = () => {
             <button
               key={idx}
               onClick={() => {
-                setSelectedDevice(device.name);
                 setFormData({...formData, deviceType: device.name});
                 setCurrentPage('contact');
               }}
@@ -203,7 +201,6 @@ const BangkitCell = () => {
         <div className="flex justify-center">
           <button
             onClick={() => {
-              setSelectedDevice('Tablet');
               setFormData({...formData, deviceType: 'Tablet'});
               setCurrentPage('contact');
             }}

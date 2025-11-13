@@ -3,7 +3,7 @@ import { Plus, Search, Edit, Trash2, User, Shield } from 'lucide-react';
 import type { User as UserType } from '../../types';
 
 const Users: React.FC = () => {
-  const [users, setUsers] = useState<UserType[]>([
+  const [users] = useState<UserType[]>([
     {
       id: 1,
       name: 'Admin',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Wrench, Hammer, Home, Mail, Clock, Sparkles, Construction, Zap } from 'lucide-react';
 
 const UnderConstruction = () => {
