@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Lock, Mail, Phone, ArrowRight } from 'lucide-react';
 import './style.css';
-import { login } from '../../services/authService';
+import { login, register } from '../../services/authService';
 import { useNavigate } from 'react-router-dom';
 
 const BangkitCellLogin = () => {
@@ -47,8 +47,7 @@ const BangkitCellLogin = () => {
         };
 
       }catch(error:any){
-        // Tampilkan error jika login gagal
-      alert(error.response?.data?.message || 'Login gagal, coba lagi');
+        alert(error.response?.data?.message || 'Login gagal, coba lagi');
       }
     } else {
       if (!formData.name || !formData.email || !formData.phone || !formData.password || !formData.confirmPassword) {
@@ -58,9 +57,16 @@ const BangkitCellLogin = () => {
       if (formData.password !== formData.confirmPassword) {
         alert('Password tidak cocok');
         return;
+      } 
+      try{
+        const response = await register(formData.name, formData.email, formData.password, formData.phone, "operator");
+        if(response.status){
+          alert('Registrasi berhasil! Silakan login');
+          setIsLogin(true);
+        };
+      }catch(error:any){
+        alert(error.response?.data?.message || 'Registerasi gagal, coba lagi');
       }
-      alert('Registrasi berhasil! Silakan login');
-      setIsLogin(true);
     }
   };
 
