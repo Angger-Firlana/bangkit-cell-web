@@ -59,7 +59,7 @@ const BangkitCellLogin = () => {
         return;
       } 
       try{
-        const response = await register(formData.name, formData.email, formData.password, formData.phone, "operator");
+        const response = await register(formData.name, formData.email, formData.password, "operator");
         if(response.status){
           alert('Registrasi berhasil! Silakan login');
           setIsLogin(true);

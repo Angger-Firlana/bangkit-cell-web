@@ -29,15 +29,25 @@ export const register = async (
   name: string,
   email: string,
   password: string,
-  phone: string,
   role: string
 ) => {
   const response = await api.post("/api/auth/register", {
     name,
     email,
     password,
-    phone,
     role
   });
   return response.data;
+};
+
+export const logout = async () => {
+  try {
+    await api.post("/api/auth/logout").catch(() => {});
+    delCacheByPrefix("auth:");
+    
+    return true;
+  } catch (err) {
+    console.error("Logout error:", err);
+    return false;
+  }
 };
