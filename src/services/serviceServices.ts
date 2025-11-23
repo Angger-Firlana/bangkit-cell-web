@@ -26,7 +26,7 @@ export async function getServices(search?: string): Promise<Service[]> {
   if (cached) return cached;
   const params = search ? { search } : {};
   const response = await axios.get<{ success: boolean; data: Service[] }>(
-    "/api/services",
+    "/api/services/",
     { params }
   );
   const data = response.data.data;
@@ -50,7 +50,7 @@ export async function getServiceById(
 export async function createService(
   data: ServicePostRequest
 ): Promise<ServicePostResponse> {
-  const response = await axios.post<ServicePostResponse>("/api/services", data);
+  const response = await axios.post<ServicePostResponse>("/api/services/", data);
   delCacheByPrefix(SERVICE_CACHE_PREFIX);
   return response.data;
 }
