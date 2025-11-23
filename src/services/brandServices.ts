@@ -18,7 +18,7 @@ const BRAND_TTL_MS = 5 * 60 * 1000; // 5 minutes
 export const getBrands = async (): Promise<Brand[]> => {
   const cached = getCache<Brand[]>(BRAND_LIST_CACHE_KEY);
   if (cached) return cached;
-  const response = await axios.get("/api/brands");
+  const response = await axios.get("/api/brands/");
   const data = (response.data.data ?? response.data) as Brand[];
   setCache(BRAND_LIST_CACHE_KEY, data, BRAND_TTL_MS);
   return data;
@@ -28,7 +28,7 @@ export const getBrands = async (): Promise<Brand[]> => {
 export const postBrand = async (
   payload: BrandPostRequest
 ): Promise<BrandPostResponse> => {
-  const response = await axios.post("/api/brands", payload);
+  const response = await axios.post("/api/brands/", payload);
   delCacheByPrefix(BRAND_CACHE_PREFIX);
   return response.data;
 };

@@ -2,7 +2,9 @@ import axios from "axios";
 import { getDecrypted } from "../shared/utils/EncryptedLocal";
 
 export const api = axios.create({
-  baseURL: "https://bangkitcell.berdikari.tech/", // pastikan sesuai backend
+  // baseURL: "https://bangkitcell.berdikari.tech/", 
+  // pastikan sesuai backend
+  baseURL: "http://localhost:8000/",
   headers: {
     "Content-Type": "application/json",
   },
