@@ -18,7 +18,7 @@ const VARIANT_TTL_MS = 5 * 60 * 1000; // 5 minutes
 export const getDeviceServiceVariants = async (): Promise<DeviceServiceVariant[]> => {
   const cached = getCache<DeviceServiceVariant[]>(VARIANT_LIST_KEY);
   if (cached) return cached;
-  const response = await axios.get("/api/variants");
+  const response = await axios.get("/api/variants/");
   const data = (response.data.data ?? response.data) as DeviceServiceVariant[];
   setCache(VARIANT_LIST_KEY, data, VARIANT_TTL_MS);
   return data;
@@ -28,7 +28,7 @@ export const getDeviceServiceVariants = async (): Promise<DeviceServiceVariant[]
 export const postDeviceServiceVariant = async (
   payload: DeviceServiceVariantPostRequest
 ): Promise<DeviceServiceVariantPostResponse> => {
-  const response = await axios.post("/api/variants", payload);
+  const response = await axios.post("/api/variants/", payload);
   delCacheByPrefix(VARIANT_CACHE_PREFIX);
   return response.data;
 };

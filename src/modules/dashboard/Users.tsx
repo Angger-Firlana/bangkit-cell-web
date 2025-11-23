@@ -65,30 +65,30 @@ const Users: React.FC = () => {
   // };
 
   const handleSave = async () => {
-  try {
-    if (editingId) {
-      const payload: any = { id: editingId, ...formData };
+    try {
+      if (editingId) {
+        const payload: any = { id: editingId, ...formData };
 
-      // ❗ Hapus password kalau kosong saat EDIT
-      if (!payload.password) {
-        delete payload.password;
+        // ❗ Hapus password kalau kosong saat EDIT
+        if (!payload.password) {
+          delete payload.password;
+        }
+
+        await userService.putUser(payload);
+      } else {
+        await userService.postUser(formData as UserPostRequest);
       }
 
-      await userService.putUser(payload);
-    } else {
-      await userService.postUser(formData as UserPostRequest);
+      const refreshed = await userService.getUsers();
+      setUsers(refreshed);
+
+      setShowFormModal(false);
+      setEditingId(null);
+      setFormData({ name: "", email: "", role: "", password: "" });
+    } catch (err) {
+      console.error(err);
     }
-
-    const refreshed = await userService.getUsers();
-    setUsers(refreshed);
-
-    setShowFormModal(false);
-    setEditingId(null);
-    setFormData({ name: "", email: "", role: "", password: "" });
-  } catch (err) {
-    console.error(err);
-  }
-};
+  };
 
   const handleEdit = (user: User) => {
     setFormData({
