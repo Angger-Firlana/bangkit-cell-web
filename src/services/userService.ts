@@ -19,7 +19,7 @@ export const getUsers = async (): Promise<User[]> => {
   const cached = getCache<User[]>(USER_LIST_CACHE_KEY);
   if (cached) return cached;
 
-  const response = await axios.get("/api/users");
+  const response = await axios.get("/api/users/");
   const data = (response.data.data ?? response.data) as User[];
 
   setCache(USER_LIST_CACHE_KEY, data, USER_TTL_MS);
@@ -29,7 +29,7 @@ export const getUsers = async (): Promise<User[]> => {
 export const postUser = async (
   payload: UserPostRequest
 ): Promise<UserPostResponse> => {
-  const response = await axios.post("/api/users", payload);
+  const response = await axios.post("/api/users/", payload);
   delCacheByPrefix(USER_CACHE_PREFIX);
   return response.data;
 };

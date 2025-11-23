@@ -19,7 +19,7 @@ const DEVICE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 export const getDevices = async (): Promise<Device[]> => {
   const cached = getCache<Device[]>(DEVICE_LIST_KEY);
   if (cached) return cached;
-  const response = await axios.get<DeviceGetResponse>("/api/devices");
+  const response = await axios.get<DeviceGetResponse>("/api/devices/");
   const data = response.data.data ?? [];
   setCache(DEVICE_LIST_KEY, data, DEVICE_TTL_MS);
   return data;
@@ -29,7 +29,7 @@ export const getDevices = async (): Promise<Device[]> => {
 export const postDevice = async (
   payload: DevicePostRequest
 ): Promise<DevicePostResopnse> => {
-  const response = await axios.post<DevicePostResopnse>("/api/devices", payload);
+  const response = await axios.post<DevicePostResopnse>("/api/devices/", payload);
   delCacheByPrefix(DEVICE_CACHE_PREFIX);
   return response.data;
 };
