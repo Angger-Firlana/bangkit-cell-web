@@ -7,7 +7,7 @@ export const login = async (
   email: string,
   password: string
 ): Promise<LoginResponse> => {
-  const response = await api.post<LoginResponse>("api/auth/login", { email, password });
+  const response = await api.post<LoginResponse>("auth/login", { email, password });
   saveEncrypted("token", response.data.token.toString());
   saveEncrypted("user", JSON.stringify(response.data.data));
   delCacheByPrefix("auth:");
@@ -20,7 +20,7 @@ const AUTH_PROFILE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 export const getProfile = async () => {
   const cached = getCache<any>(AUTH_PROFILE_KEY);
   if (cached) return cached;
-  const response = await api.get("/profile");
+  const response = await api.get("/me");
   setCache(AUTH_PROFILE_KEY, response.data, AUTH_PROFILE_TTL_MS);
   return response.data;
 };
@@ -31,7 +31,7 @@ export const register = async (
   password: string,
   role: string
 ) => {
-  const response = await api.post("/api/auth/register", {
+  const response = await api.post("auth/register", {
     name,
     email,
     password,
@@ -42,7 +42,7 @@ export const register = async (
 
 export const logout = async () => {
   try {
-    await api.post("/api/auth/logout").catch(() => {});
+    await api.post("auth/logout").catch(() => {});
     delCacheByPrefix("auth:");
     
     return true;
