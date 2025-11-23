@@ -9,7 +9,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
   const cached = getCache<DashboardStats>(DASHBOARD_STATS_CACHE_KEY);
   if (cached) return cached;
 
-  const response = await axios.get("stats/");
+  const response = await axios.get("/api/stats");
   const data: DashboardStats = response.data.data ?? response.data;
   setCache(DASHBOARD_STATS_CACHE_KEY, data, DASHBOARD_STATS_TTL_MS);
   return data;
