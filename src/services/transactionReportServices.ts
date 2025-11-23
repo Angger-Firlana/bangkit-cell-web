@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { api } from "./axios";
 
 export const fetchTransactionReport = async () => {
-  const response = await axios.get("/api/transaction/report");
+  const response = await api.get("/api/stats/report");
   return response.data.data ?? response.data;
 };
 
