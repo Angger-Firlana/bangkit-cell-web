@@ -23,7 +23,29 @@ import type { DashboardStats } from "../../types/stats";
 import { getDashboardStats } from "../../services/dashboard";
 import dayjs from "dayjs";
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
+// Warna berbeda untuk setiap brand
+const BRAND_COLORS: { [key: string]: string } = {
+  'Xiaomi': '#FFA447',
+  'Apple': '#4ECDC4',
+  'Samsung': '#A78BFA',
+  'Oppo': '#FFE66D',
+  'Vivo': '#95E1D3',
+  'Realme': '#F38181',
+  'Infinix': '#AA96DA',
+  'Tecno': '#FF6BCB',
+  'Nokia': '#67C5E6',
+  'Asus': '#FF6B6B',
+};
+
+// Fungsi untuk generate warna random jika brand belum ada di mapping
+const getColorForBrand = (brandName: string, index: number): string => {
+  if (BRAND_COLORS[brandName]) {
+    return BRAND_COLORS[brandName];
+  }
+  // Generate warna berdasarkan index jika brand tidak ada
+  const hue = (index * 137.508) % 360; // Golden angle approximation
+  return `hsl(${hue}, 70%, 60%)`;
+};
 
 const Dashboard: React.FC = () => {
   const [data, setData] = useState<DashboardStats | null>(null);
@@ -149,7 +171,7 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Device Distribution Pie Chart */}
+            {/* Device Distribution Pie Chart - FIXED */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
                 Device Distribution
@@ -163,15 +185,16 @@ const Dashboard: React.FC = () => {
                       cy="50%"
                       labelLine={false}
                       outerRadius={80}
+                      innerRadius={50}
                       label={({ name, percent }) =>
                         `${name} ${percent !== undefined ? (percent * 100).toFixed(0) : '0'}%`
                       }
                       dataKey="value"
                     >
-                      {data.device_distribution.map((index) => (
+                      {data.device_distribution.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
-                          fill={COLORS[index.value% COLORS.length]}
+                          fill={getColorForBrand(entry.name, index)}
                         />
                       ))}
                     </Pie>

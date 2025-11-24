@@ -16,6 +16,23 @@ const Devices: React.FC = () => {
   const [showBrandModal, setShowBrandModal] = useState(false);
   const [searchBrand, setSearchBrand] = useState('');
 
+  // Growth Calculation
+  const calculateGrowth = (items: (Device | Brand)[]) => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const thisMonthCount = items.filter(item => {
+      if (!item.created_at) return false;
+      const date = new Date(item.created_at);
+      return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+    }).length;
+
+    return thisMonthCount;
+  };
+  const deviceGrowth = calculateGrowth(devices);
+  const brandGrowth = calculateGrowth(brands);
+
   // Form State
   const [formData, setFormData] = useState<DevicePostRequest | DevicePustRequest>({
     brand_id: 0,
@@ -114,6 +131,59 @@ const Devices: React.FC = () => {
           <Plus className="w-4 h-4" />
           Tambah Device
         </button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {/* Total Devices */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-gray-600 text-sm mb-2">Total Devices</p>
+              <h3 className="text-3xl font-bold text-gray-800">{devices.length}</h3>
+              <p className="text-teal-500 text-xs mt-2 flex items-center gap-1">
+                <span>↑</span> {deviceGrowth} dari bulan lalu
+              </p>
+            </div>
+            <div className="w-20 h-20 bg-blue-100 rounded-lg overflow-hidden">
+              <img src="https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=200&h=200&fit=crop" alt="Brands" className="w-full h-full object-cover" />
+            </div>
+          </div>
+        </div>
+
+        {/* Total Brand */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-gray-600 text-sm mb-2">Total Brand</p>
+              <h3 className="text-3xl font-bold text-gray-800">{brands.length}</h3>
+              <p className="text-teal-500 text-xs mt-2 flex items-center gap-1">
+                <span>↑</span> {brandGrowth} dari bulan lalu
+              </p>
+            </div>
+            <div className="w-20 h-20 bg-blue-100 rounded-lg overflow-hidden">
+              <img src="https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=200&h=200&fit=crop" alt="Brands" className="w-full h-full object-cover" />
+            </div>
+          </div>
+        </div>
+
+        {/* Total device Pro/Standard */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-gray-600 text-sm mb-2">Total device Pro / Standard</p>
+              <h3 className="text-3xl font-bold text-gray-800">
+                {devices.filter(d => d.tipe.toLowerCase().includes('pro') || d.tipe.toLowerCase().includes('ultra')).length} / {devices.filter(d => !d.tipe.toLowerCase().includes('pro') && !d.tipe.toLowerCase().includes('ultra')).length}
+              </h3>
+              <p className="text-teal-500 text-xs mt-2 flex items-center gap-1">
+                <span>↑</span> {deviceGrowth} dari bulan lalu
+              </p>
+            </div>
+            <div className="w-20 h-20 bg-blue-100 rounded-lg overflow-hidden">
+              <img src="https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=200&h=200&fit=crop" alt="Brands" className="w-full h-full object-cover" />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Search Bar */}
